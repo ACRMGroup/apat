@@ -1,6 +1,11 @@
 APAT: Automated Protein Annotation Tool
 =======================================
 
+> Note! This is currently not working and needs some attention to
+> work with any of the servers for which plugins were written.
+
+---------------------------------------------------------------
+
 There is a frequent need to apply the same set of prediction and
 annotation tools to a large batch of sequences. Such tools may reside
 locally or on remote servers accessed over the web. In order to create
