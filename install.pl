@@ -109,11 +109,14 @@ InstallFile("prog_dir/display.pl", "$apatdir/display.pl", 1, $htmltop, "", $perl
 InstallFile("prog_dir/make-input-xml.pl", "$apatdir/make-input-xml.pl", 1, $apatdir, "", $perl);
 
 # Unconfigured plugins (web)
-InstallFile("prog_dir/plug/0getseq.pl",  "$plugdir/0getseq.pl",  1, "", "", $perl);
-InstallFile("prog_dir/plug/1netpho.pl",  "$plugdir/1netpho.pl",  1, "", "", $perl);
-InstallFile("prog_dir/plug/2netgly.pl",  "$plugdir/2netgly.pl",  1, "", "", $perl);
-InstallFile("prog_dir/plug/4dastm.pl",   "$plugdir/4dastm.pl",   1, "", "", $perl);
-InstallFile("prog_dir/plug/5targetp.pl", "$plugdir/5targetp.pl", 1, "", "", $perl);
+InstallFile("prog_dir/plug/0getseq.pl",   "$plugdir/0getseq.pl",   1, "", "", $perl);
+InstallFile("prog_dir/plug/1netpho.pl",   "$plugdir/1netpho.pl",   1, "", "", $perl);
+InstallFile("prog_dir/plug/2netgly.pl",   "$plugdir/2netgly.pl",   1, "", "", $perl);
+InstallFile("prog_dir/plug/4dastm.pl",    "$plugdir/4dastm.pl",    1, "", "", $perl);
+InstallFile("prog_dir/plug/5targetp.pl",  "$plugdir/5targetp.pl",  1, "", "", $perl);
+InstallFile("prog_dir/plug/7TMHMM.pl",    "$plugdir/7TMHMM.pl",    1, "", "", $perl);
+InstallFile("prog_dir/plug/8plasmit.pl",  "$plugdir/8plasmit.pl",  1, "", "", $perl);
+InstallFile("prog_dir/plug/10chloroP.pl", "$plugdir/10chloroP.pl", 1, "", "", $perl);
 
 # Configured plugins (local)
 InstallFile("prog_dir/plug/3psipre.pl", "$plugdir/3psipre.pl", 1, $psipreddir, "", $perl) if($psipreddir ne "");
