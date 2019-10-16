@@ -24,8 +24,8 @@ or you may write your own programs to extract and analyze the data.
 A paper is available describing the system has been published in
 Bioinformatics, 22,291-296.
 
-**APAT was written by PhD student S.V.V. Deevi funded by The Felix Trust
-at Reading University.**
+*APAT was written by PhD student S.V.V. Deevi funded by The Felix Trust
+at Reading University.*
 
 ---------------------------------------------------------------
 
