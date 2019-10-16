@@ -4,8 +4,8 @@
 #   Program:    APAT: display
 #   File:       display.pl
 #   
-#   Version:    V1.0
-#   Date:       14.03.05
+#   Version:    V1.1
+#   Date:       15.06.05
 #   Function:   APAT display program
 #   
 #   Copyright:  (c) University of Reading / S.V.V. Deevi 2005
@@ -47,6 +47,8 @@
 #   Revision History:
 #   =================
 #   V1.0  14.03.05 Original
+#   V1.1  15.06.05 Now checks that a value-perseq was returned correctly
+#                  and indicates if there is no prediction in the output
 #
 #*************************************************************************
 use CGI ':standard';
@@ -371,10 +373,13 @@ sub HandlePerSeq
         push @description, $desc;
         
     	my $valuetag = $perseq->getElementsByTagName("value-perseq")->item(0);
-        my $valuehl = $valuetag->getAttribute('highlight');
-        push @valuehglt, $valuehl;
-    	$val = $valuetag->getFirstChild->getNodeValue;
-        push @value, $val;
+        if($valuetag) # ACRM 15.06.05
+        {
+            my $valuehl = $valuetag->getAttribute('highlight');
+            push @valuehglt, $valuehl;
+            $val = $valuetag->getFirstChild->getNodeValue;
+            push @value, $val;
+        }
     }
 
     if($doPrintValues)
@@ -468,13 +473,19 @@ sub PrintValues
     {
         #$$value_p[$i] =~ s/%_%/<font face="times" size="5"><em>/g;
         #$$value_p[$i] =~ s/%=%/<\/em><\/font>/g;  
+
+        # ACRM 15.06.05 Check there is a prediction and indicate if not
         if($$valuehglt_p[$i]) 
         {
-            printf "<p><b>%s</b> :<font face=\"times\" size=\"5\"><em>%s<\/em><\/font></p>\n", $$valnames_p[$i], $$value_p[$i];
+            printf "<p><b>%s</b> :<font face=\"times\" size=\"5\"><em>%s<\/em><\/font></p>\n", 
+               $$valnames_p[$i], 
+               (defined($$value_p[$i])?$$value_p[$i]:"No prediction");
         }
         else
         {
-            printf "<p><b>%s</b> : %s</p>\n", $$valnames_p[$i], $$value_p[$i];
+            printf "<p><b>%s</b> : %s</p>\n", 
+               $$valnames_p[$i], 
+               (defined($$value_p[$i])?$$value_p[$i]:"No prediction");
         }
 	$$description_p[$i] =~ s/\n/<br \/>/g; 
 	#$$description_p[$i] =~ s/%_%/<font face="times" size="5"><big>/g; 

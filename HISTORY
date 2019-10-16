@@ -1,0 +1,8 @@
+N.B. Top level release numbers are for major rewrites
+     Second level are for changes to the main code
+     Third level are for changes to plugins only
+
+V1.0    14.04.05  Original release
+V1.0.1  26.05.05  New wrappers (plasmit, prositescan)
+V1.1    15.06.05  Fixed a bug in display.pl when a value-perseq doesn't
+                  actually have a value.
