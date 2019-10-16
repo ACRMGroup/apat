@@ -118,6 +118,7 @@ InstallFile("prog_dir/plug/07tmhmm.pl",      "$plugdir/07tmhmm.pl",       1, "",
 InstallFile("prog_dir/plug/08plasmit.pl",    "$plugdir/08plasmit.pl",     1, "", "", $perl);
 InstallFile("prog_dir/plug/09chlorop.pl",    "$plugdir/09chlorop.pl",     1, "", "", $perl);
 InstallFile("prog_dir/plug/10psort.pl",      "$plugdir/10psort.pl",       1, "", "", $perl);
+InstallFile("prog_dir/plug/11subloc.pl",     "$plugdir/11subloc.pl",      1, "", "", $perl);
 
 # Configured plugins (local)
 InstallFile("prog_dir/plug/03psipred.pl",     "$plugdir/03psipred.pl",     1, $psipreddir, "", $perl) if($psipreddir ne "");

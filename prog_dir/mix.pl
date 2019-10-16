@@ -46,7 +46,8 @@
 #   ./mix.pl -h
 #   ./mix.pl -l
 #   ./mix.pl [-d=file] -setdefaults email:andrew@bioinf.org.uk \
-#            targetp:origin=non-plant psort:origin=animal%foo=bar
+#            targetp:origin=non-plant psort:origin=animal%foo=bar \
+#            subloc:origin=prokaryotic|eukaryotic
 #   ./mix.pl [-d=file] [-f] [server:param=value[,param=value...]...] file.faa
 #
 #*************************************************************************
@@ -54,6 +55,7 @@
 #   Revision History:
 #   =================
 #   V1.0  14-19.03.05 Original
+#   V1.1  01.03.06 Added defaults for subloc
 #
 #*************************************************************************
 use strict;
@@ -64,7 +66,8 @@ use strict;
 # valid options separated with | symbols. A comma separates this from the
 # next option and set of allowed values.
 %::knownserver = ('psort' => 'origin=Gram-positive bacterium|Gram-negative bacterium|yeast|animal|plant',
-                  'targetp' => 'origin=plant|non-plant');
+                  'targetp' => 'origin=plant|non-plant',
+                  'subloc' => 'origin=prokaryotic|eukaryotic');
 
 #*************************************************************************
 $::deffile = ((defined($::d))?($::d):("$ENV{'HOME'}/.apatrc"));

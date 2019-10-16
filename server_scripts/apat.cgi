@@ -63,6 +63,8 @@ $type = $cgi->param('D1');
 $type =~ s/\r//g;
 $type_psort = $cgi->param('D2');
 $type_psort =~ s/\r//g;
+$type_subloc = $cgi->param('D3');
+$type_subloc =~ s/\r//g;
 $emailaddress = $cgi->param('T1');
 $emailaddress =~ s/\r//g;
 
@@ -81,7 +83,7 @@ if($seqid eq '')
 }
 
 #Build the XML
-$xml_format = "<input>\n<sequenceid>$seqid</sequenceid>\n<sequence>$sequence</sequence>\n<emailaddress>$emailaddress</emailaddress>\n<parameter server='targetp' param='origin' value='$type' />\n<parameter server='psort' param='origin' value='$type_psort' />\n</input>";
+$xml_format = "<input>\n<sequenceid>$seqid</sequenceid>\n<sequence>$sequence</sequence>\n<emailaddress>$emailaddress</emailaddress>\n<parameter server='targetp' param='origin' value='$type' />\n<parameter server='psort' param='origin' value='$type_psort' />\n<parameter server='subloc' param='origin' value='$type_subloc' />\n</input>";
 
 
 $prog_dir = "{SUBS1}";

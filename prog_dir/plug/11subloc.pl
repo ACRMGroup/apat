@@ -1,12 +1,12 @@
-#!{PERL}
+#!/usr/bin/perl -w
 #*************************************************************************
 #
-#   Program:    APAT: netpho
-#   File:       1netpho.pl
+#   Program:    APAT: SubLoc
+#   File:       subloc.pl
 #   
-#   Version:    V1.2
-#   Date:       15.08.05
-#   Function:   APAT plug-in wrapper for NETPHOS
+#   Version:    V1.0
+#   Date:       03.02.06
+#   Function:   APAT plug-in wrapper for SubLoc
 #   
 #   Copyright:  (c) University of Reading / S.V.V. Deevi 2005
 #   Author:     S.V.V. Deevi
@@ -46,18 +46,18 @@
 #
 #   Revision History:
 #   =================
-#   V1.0  14.03.05 Original
-#   V1.1  21.07.05 - tidied up version with removal of unwanted lines of code.
-#   V1.2  15.08.05 - Produces additional tags called <info> and <link>  
+#   V1.0  03.02.06 Original
+#   
 #*************************************************************************
-use strict; 
+use strict;
 
 use XML::DOM;
 use LWP::UserAgent;
 
 my $parser = new XML::DOM::Parser;
 my $doc = $parser->parsefile ($ARGV[0]);
-my ($sequenceidtag, $sequenceid, $sequencetag, $sequence, @sqtest, $link);
+my ($sequenceidtag, $sequenceid, $origin, $sequencetag, $sequence, $link);
+my ($emailaddresstag, $emailaddress, $parameter, $server);
 
 foreach my $input ($doc->getElementsByTagName("input"))
 {
@@ -65,79 +65,77 @@ foreach my $input ($doc->getElementsByTagName("input"))
     $sequenceid = $sequenceidtag->getFirstChild->getNodeValue;
     $sequencetag = $input->getElementsByTagName("sequence")->item(0);
     $sequence = $sequencetag->getFirstChild->getNodeValue;	
+
+    foreach $parameter($input->getElementsByTagName("parameter"))
+    {
+        $server = $parameter->getAttribute('server');
+        if($server eq 'subloc')
+        {
+            my($param) = $parameter->getAttribute('param');
+            if($param eq 'origin')
+            {
+                $origin = $parameter->getAttribute('value');
+            }
+        }
+    }
 }
 
 $sequence =~ s/\s+//g;
-@sqtest = split(//,$sequence);
-
-netphos($sequence);
+subloc($sequence);
 
 
 ##############################################################################
-##########                        NETPHOS                          ###########
-sub netphos
+##########                        SUBLOC                          ###########
+sub subloc
 {
-    my($sq) = @_;
-    my ($results, $dt, @lines, @score, $count, $k, $val, @thrres, $tr);
+    my($seq) = @_;
+    my ($results,$dt,@lines);
+    my($pl,$loc,$ri,$ind,$ea,$acc);
+
     $dt=`date`;
     $dt =~ s/\n//;
-    $results = RunNetPhos($sq);
+    $results = RunSubLoc($seq,$origin);
     @lines = split(/\n/,$results);
-    @score = parse(@lines);
+    ($pl,$loc,$ri,$ind,$ea,$acc) = Parse(@lines);	
 
     print <<__EOF;
-    <result program='NetPhos' version='2.0'>
-       <function>Protein Phosphorylation sites Prediction</function>
-       <info href='http://www.cbs.dtu.dk/services/NetPhos/'>NetPhos Web Server</info>
+    <result program='SubLoc' version='1.0'>
+       <function>Protein subcellular localization Prediction</function>
+       <info href='http://www.bioinfo.tsinghua.edu.cn/SubLoc/'>SubLoc Web Server</info>
        <run>
           <params>
-             <param name = 'Serine' value = 'Checked'/>
-	     <param name = 'Threonine' value = 'Checked'/>
-	     <param name = 'Tyrosine' value = 'Checked'/>
-	     <param name = 'Generate Graphics' value = 'Unchecked'/>
-	     <param name = 'Threshold' value = '0.500'/>
-          </params>
+             <param name = '$origin' value = 'Checked'/>
+	  </params>
 	  <date>$dt</date>
        </run>
        <predictions>
-          <link href='$link'>Actual prediction(native, unparsed form)- available only for a limited time</link>
-          <perres-number name = 'P-score' clrmin = '0.0' clrmax = '1.0' graph='1' graphtype='bars'>
-__EOF
-                $count=1;
-                foreach $val(@score)
-                { 
-	            $k = $count;
-                    $val = 0 if(!defined($val));
-		    printf "              <value-perres residue='$k'>%f</value-perres>\n",$val;
-		    if($val>0.500)
-		    {
-			push(@thrres,$k);
-		    }
-	            $count++;
-                }
-                print <<__EOF;
-          </perres-number>
-	  <threshold>
-	     <description>P-scores greater than 0.5 are considered as positive predictions
-	     </description>
-__EOF
-                foreach $tr(@thrres)
-	        {  
-		    print "              <thr-res>$tr</thr-res>\n";
-		}
-                print <<__EOF;
-	  </threshold>    
-       </predictions>
+       <link href='$link'>Actual prediction(native, unparsed form)- available only for a limited time</link>
+       
+            <perseq name = '$pl'>\n";
+                <description>Predicted subcellular Location of the protein</description>\n";
+                <value-perseq highlight='1'>$loc</value-perseq>\n";
+            </perseq>\n";
+           
+            <perseq name = '$ri'>
+	        <description>Value of Reliability Index</description>
+	        <value-perseq highlight='0'>$ind</value-perseq>\n";
+            </perseq>
+	    <perseq name = '$ea'> 
+	        <description>Expected Accuracy in percentage</description>
+	        <value-perseq highlight='0'>$acc</value-perseq>\n";
+	    </perseq>
+	</predictions>
     </result>       
 __EOF
 }
 
 
-######################################################################
-sub RunNetPhos
+
+#*************************************************************************
+sub RunSubLoc
 {
-    my($seq) = @_;
-    my($webproxy, $url, $post, $ua, $req, $result);
+    my($seq,$origin) = @_;
+    my($webproxy, $url, $post, $ua, $req, $result, $orgtype);
 
     # Specify proxy server (with user/password) if required
     if(defined($ENV{WEBPROXY}))
@@ -150,45 +148,25 @@ sub RunNetPhos
     }
 	    
     # This is the URL for the CGI script we are accessing
-    $url = "http://www.cbs.dtu.dk/cgi-bin/nph-webface";
+    if($origin eq 'prokaryotic')
+    {
+        $url = "http://www.bioinfo.tsinghua.edu.cn/SubLoc/cgi-bin/pro_subloc.cgi";
+    }
+    elsif($origin eq 'eukaryotic')
+    {
+        $url = "http://www.bioinfo.tsinghua.edu.cn/SubLoc/cgi-bin/eu_subloc.cgi";
+    }
 
     # These are the data to send to the CGI script, obtained by 
     # examining the submission web page
-    # NOTE! For some reason this server NEEDS the configfile to come first
-    $post = "configfile=/usr/opt/www/pub/CBS/services/NetPhos-2.0/NetPhos.cf&seqpaste=$seq&tyrosine=ps&serine=ps&threonine=ps";
+    $post = "INPUT_SEQUENCE=$seq";
 
     $ua = CreateUserAgent($webproxy);
     $req = CreatePostRequest($url, $post);
     $result = GetContent($ua, $req);
-
-    # $result now contains the redirect page - grab the URL for that page
-    $url = GrabRedirect($result);
-    
-    # Iterate while the URL contains 'wait'
-    do
-    {
-        $req = CreateGetRequest($url);
-        $result = GetContent($ua, $req);
-        $url = GrabRedirect($result);
-        sleep 1;
-    }   while($url =~ /wait/);
-
-    # The URL is now the one for the results page
-    $req = CreateGetRequest($url);
-    $result = GetContent($ua, $req);
     $link = $url;
-    $link =~ s/&/&amp;/g;
-
+       
     return($result);
-}
-
-########################################################################
-sub GrabRedirect
-{
-    my($html) = @_;
-
-    $html =~ /location\.replace\(\"(.*?)\"\)/;
-    return($1);
 }
 
 ########################################################################
@@ -243,39 +221,25 @@ sub CreateUserAgent
 }
 
 ########################################################################
-sub parse
+sub Parse
 {
-    my @data =@_;
-    my ($i,$in,@fields,@score);
-    for($i=0; $i<@data; $i++)
-    {
-	$_ = $data[$i];
-	if(/^Name/)             # -w causes a warning here
+    my (@data) = @_;
+    my ($i,$pl,$loc,$ri,$ind,$ea,$acc,$res);
+ 
+    $res = join(' ',@data);
+
+    if($res)
+    {   
+	$_ = $res;
+	if(/(Predicted Location): (.*)<\/font>.*(Reliability Index): RI = (\d).*Expected .*= (.*)<\/font>/)
 	{
-	    $i++;
-	    $in=1;
-	}
-	elsif(/^______/)
-	{
-	    $in=0;  
-	}
-	elsif($in)
-	{
-	    s/^\s+//;
-	    if(length())
-	    {
-		@fields=split();
-		$score[$fields[1]-1]=$fields[3];
-	    }
-	}
-        elsif(($fields[1]-1 <= $#sqtest+1)) 
-	{
-            if(!$score[$fields[1]-1])
- 	    {
- 		$fields[1] = $#sqtest+1;
- 		$score[$fields[1]-1]=0;
- 	    }
-	}
+	    $pl  = $1;
+	    $loc = $2;
+	    $ri  = $3;  
+	    $ind = $4;
+	    $ea  = 'Expected Accuracy';
+	    $acc = $5;
+        }
     }
-    return(@score);
+    return($pl,$loc,$ri,$ind,$ea,$acc);
 }

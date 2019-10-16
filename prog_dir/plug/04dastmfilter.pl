@@ -1,11 +1,11 @@
-#!{PERL} -w
+#!/acrm/usr/local/bin/perl -w
 #*************************************************************************
 #
 #   Program:    APAT: DAS-TMfilter
-#   File:       4das.pl
+#   File:       04das.pl
 #   
-#   Version:    V1.2
-#   Date:       15.08.05
+#   Version:    V1.3
+#   Date:       27.02.06
 #   Function:   APAT plug-in wrapper for DAS-TMfilter
 #   
 #   Copyright:  (c) University of Reading / S.V.V. Deevi 2005
@@ -49,6 +49,7 @@
 #   V1.0  14.03.05 Original
 #   V1.1  25.07.05 - tidied up version with removal of unwanted lines of code which also now prints the comment field correctly.
 #   V1.2  15.08.05 - Produces additional tags called <info> and <link> 
+#   V1.3  27.02.06 - Modified URL(broken) to which the data is being submitted. 
 #*************************************************************************
 use strict;
 
@@ -149,7 +150,7 @@ sub RunDAS
     }
             
     # This is the URL for the CGI script we are accessing
-    $url = "http://mendel.imp.univie.ac.at/sat/DAS/cgi-bin/das.cgi";
+    $url = "http://mendel.imp.ac.at/sat/DAS/cgi-bin/das.cgi";
 
     # These are the data to send to the CGI script, obtained by 
     # examining the submission web page

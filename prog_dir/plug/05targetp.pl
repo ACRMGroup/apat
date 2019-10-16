@@ -1,11 +1,11 @@
-#!{PERL} -w
+#!/acrm/usr/local/bin/perl -w
 #*************************************************************************
 #
 #   Program:    APAT: TargetP
 #   File:       5targetp.pl
 #   
-#   Version:    V1.2
-#   Date:       15.08.05
+#   Version:    V1.3
+#   Date:       27.02.06
 #   Function:   APAT plug-in wrapper for TargetP
 #   
 #   Copyright:  (c) University of Reading / S.V.V. Deevi 2005
@@ -49,6 +49,7 @@
 #   V1.0  14.03.05 Original
 #   V1.1  20.07.05 - Handles the modified output format of targetp server and cope with the modified input XML format
 #   V1.2  15.08.05 - Produces additional tags called <info> and <link> 
+#   V1.3  27.02.06 - Corrects the bug found in submitting a plant sequence.
 #*************************************************************************
 use strict;
 
@@ -401,11 +402,11 @@ sub OrgType
 
     if($origin eq 'non-plant')
     {
-	$orgtype = '2';
+	$orgtype = 'non_plant';
     }
     elsif($origin eq 'plant')
     {
-	$orgtype = '1';
+	$orgtype = 'plant';
     }
     return $orgtype;
 }
