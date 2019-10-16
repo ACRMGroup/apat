@@ -4,8 +4,8 @@
 #   Program:    APAT: display
 #   File:       display.pl
 #   
-#   Version:    V1.1
-#   Date:       15.06.05
+#   Version:    V1.4
+#   Date:       17.08.05
 #   Function:   APAT display program
 #   
 #   Copyright:  (c) University of Reading / S.V.V. Deevi 2005
@@ -49,13 +49,18 @@
 #   V1.0  14.03.05 Original
 #   V1.1  15.06.05 Now checks that a value-perseq was returned correctly
 #                  and indicates if there is no prediction in the output
-#
+#   V1.2  29.07.05 Now checks the returns from most of the tags and 
+#                  tries not to fail when empty tags are returned.
+#   V1.3  15.08.05 Returns something sensible instead of failing when it comes across faulty XML file. Also provides input details,link to the actual webservers used for various predictions and a link to the actual predictions obtained from them. 
+#   V1.4  17.08.05 Creates an index of tools used, with a clickable link to avoid scrolling down. Also formats the input details and index within boxes to maintain consistency. Input and index Code is split into subroutines.
 #*************************************************************************
 use CGI ':standard';
 use GD::Graph::lines;
 use GD::Graph::bars;
 use strict;
 use XML::DOM;
+
+$|=1;
 
 HelpDie() if(defined($::h));
 
@@ -71,7 +76,7 @@ $::progname = 0;
 $::progvers = 0;
 $::function = 0;
 
-my ($seqid, @seq, $rescount);
+my ($seqidtag, $seqid, $emailaddress, $server, $param, $value, @seq, $rescount);
 my $parser = new XML::DOM::Parser;
 my $doc = $parser->parsefile ($ARGV[0]);
 $rescount = 0;
@@ -79,16 +84,20 @@ $rescount = 0;
 
 PrintHTMLHeader();
 
-foreach my $input ($doc->getElementsByTagName("input"))
-{
-    $seqid = $input->getElementsByTagName("seqid")->item(0);
-    foreach my $seqtag ($input->getElementsByTagName("seq"))
-    {
-        push @seq, $seqtag->getFirstChild->getNodeValue;
-        $rescount++;
-    }
-}
+HandleInput($doc);
 
+print "</div>\n";
+
+print "<hr />";
+
+print "<div class='results'>\n";
+print "<h1>Index of tools run:</h1><br /><i>Click on the name of the tool to avoid scrolling down.</i><br />";
+
+HandleIndex($doc);
+
+print "</div>\n";
+
+print "<hr />";
 
 # Step through each result set
 foreach my $results ($doc->getElementsByTagName("result"))
@@ -96,19 +105,21 @@ foreach my $results ($doc->getElementsByTagName("result"))
     print "<div class='results'>\n";
     HandleCommonData($results); 
    
-
     # Now extract the predictions - there should only be one of these
     # so we use ->item(0) rather than loop around each
-    my $prediction = $results->getElementsByTagName("predictions")->item(0);
-
-    
-    HandlePerRes($prediction);
-
-    HandlePerDom($prediction);
-
-    HandlePerSeq($prediction);
-
-
+    if(my $prediction = $results->getElementsByTagName("predictions")->item(0))
+    {
+        HandlePerRes($prediction);
+        
+        HandlePerDom($prediction);
+        
+        HandlePerSeq($prediction);
+    } 
+    else
+    {
+        print "<p class='warning'>This server is not responding</p>\n";
+    }
+ 
     print "</div>\n";
 
     print "<p><br /><br /></p><hr /><p><br /><br /></p>\n";
@@ -118,6 +129,86 @@ print "</body>\n</html>\n";
 # Avoid memory leaks - cleanup circular references for garbage collection
 $doc->dispose;
 
+
+#############################################################################
+sub HandleInput
+{
+    my($doc) = @_;
+    
+    foreach my $input ($doc->getElementsByTagName("input"))
+    {
+        $seqidtag = $input->getElementsByTagName("seqid")->item(0);
+        if($seqidtag)
+        {
+            if(my $sid = $seqidtag->getFirstChild)
+            {
+                $seqid = $sid->getNodeValue;
+            }
+        }
+
+        foreach my $seqtag ($input->getElementsByTagName("seq"))
+        {
+            if(my $sequence = $seqtag->getFirstChild)
+            {
+                push @seq, $sequence->getNodeValue; 
+                $rescount++;
+            }
+        }
+        my $emailaddresstag = $input->getElementsByTagName("emailaddress")->item(0);
+        if($emailaddresstag)
+        {
+            if(my $ead = $emailaddresstag->getFirstChild)
+            {
+                $emailaddress = $ead->getNodeValue;
+            }
+        }
+        
+        print "<div class='results'>\n";
+        print "<h1>\U input details</h1>\n";
+        print "<p><b>Number of Residues:</b>$rescount</p>\n";
+        print "<p><b>Sequence ID:</b>$seqid</p>\n";
+        print "<p><b>Sequence:</b></p>\n";
+        my $resPerRow = 60;
+        my $seqlen = @seq;
+        print "<pre><p>";
+        
+        for(my $start=0; $start<$seqlen; $start+=$resPerRow)
+        {
+            print "\t";
+            for(my $i=$start; $i<$start+$resPerRow && $i<$seqlen; $i++)
+            { 
+                print"$seq[$i]";
+            }
+            print "<br />";
+        }
+        
+        print "</p></pre>\n";
+        print "<p><b>Email address:</b>$emailaddress</p>";
+        print "<p><b>Parameters:</b></p>";
+        
+        foreach my $parametertag ($input->getElementsByTagName("parameter"))
+        {
+            $server = $parametertag->getAttribute('server');
+            $param = $parametertag->getAttribute('param');
+            $value = $parametertag->getAttribute('value');
+            print "<p><pre>\t Server : $server \t Parameter Name : $param \t Value : $value</pre></p>";
+        }
+    }
+}
+
+
+#############################################################################
+sub HandleIndex
+{
+    my($doc) = @_;
+
+    # Grab and print the index details
+    foreach my $results ($doc->getElementsByTagName("result"))
+    {
+        $::progname = $results->getAttribute('program');
+        print "<a href=\"#$::progname\"><h3>$::progname</h3></a><br />";
+    }    
+}
 
 
 #############################################################################
@@ -129,10 +220,16 @@ sub HandleCommonData
     $::progname = $results->getAttribute('program');
     $::progvers = $results->getAttribute('version');
     my $fc = $results->getElementsByTagName("function")->item(0);
-    $::function = $fc->getFirstChild->getNodeValue;
+    if($fc)
+    {
+        if(my $func = $fc->getFirstChild)
+        {
+            $::function = $func->getNodeValue;
+        }
+    }
 
     # Print a title
-    print "<h1>Analysis results from program: $::progname</h1>\n";
+    print "<a name=\"$::progname\"><h1>Analysis results from program: $::progname</h1></a>\n";
 
     if($::progvers eq "")
     {
@@ -144,6 +241,40 @@ sub HandleCommonData
     }
     
     print "<h3>Function : $::function</h3>\n";
+    
+    my($info,$href);
+    my $infotag = $results->getElementsByTagName("info")->item(0);
+    if($infotag)
+    {
+        $href = $infotag->getAttribute('href');
+        my $inf = $infotag->getFirstChild;
+        if($inf)
+        {
+            $info = $inf->getNodeValue;
+        } 
+    }
+
+    if($href)
+    {
+        print "<h3><a href='$href'>$info</a></h3>\n";
+    }
+    else
+    {
+        print "<h3><i>$info</i></h3>\n";
+    }
+
+    my($link,$ref);
+    my $linktag = $results->getElementsByTagName("link")->item(0);
+    if($linktag)
+    {
+        $ref = $linktag->getAttribute('href');
+        my $lin = $linktag->getFirstChild;
+        if($lin)
+        {
+            $link = $lin->getNodeValue;
+        } 
+    }
+    print "<h3><a href='$ref'>$link</a></h3>\n",if($link);
 }
 
 
@@ -162,10 +293,13 @@ sub HandlePerRes
         
     # Get each number array from the predictions
     foreach my $numarray ($prediction->getElementsByTagName("perres-number"))
-    {
+    { 
         my $valuetype = $numarray->getAttribute('name');
-        push @array_names, $valuetype;
-
+        if($valuetype)
+        {
+            push @array_names, $valuetype;
+        }
+        
         $doPrintTable = 1;
 
         # Blank our array
@@ -174,24 +308,40 @@ sub HandlePerRes
             $values[$arraycount][$i] = '-';
         }
 
-        # now stuff the residue numbers and values into a pair of arrays and print them
-        foreach my $value ($numarray->getElementsByTagName("value-perres"))
-        {
-            $resnum = $value->getAttribute('residue');
-            $values[$arraycount][$resnum-1] = $value->getFirstChild->getNodeValue;
-	}
+        # now stuff the residue numbers and values into a pair of arrays and print them 
 
-	# Get the minimun and maximum values for setting colour 
+        my($valuecheck) = 0;
+        foreach my $value($numarray->getElementsByTagName("value-perres"))
+        {
+            my $resnum = $value->getAttribute('residue');
+            if($resnum)
+            {
+                my $content = $value->getFirstChild;
+                if($content)
+                {
+                    $values[$arraycount][$resnum-1] = $content->getNodeValue;
+                    $valuecheck++;
+                }
+            }
+        }
+
+        if($valuecheck == 0)
+        {
+            print "<p class='warning'>This server is not responding</p>\n"; 
+            return;
+        }
+
+        # Get the minimun and maximum values for setting colour 
 	my $clrmintag = $numarray->getAttribute('clrmin');
-	$clrmin[$arraycount] = $clrmintag;
-	my $clrmaxtag = $numarray->getAttribute('clrmax');
+        $clrmin[$arraycount] = $clrmintag;
+        my $clrmaxtag = $numarray->getAttribute('clrmax');
 	$clrmax[$arraycount] = $clrmaxtag;
-	
+        
 	if(my $graphtag = $numarray->getAttribute('graph'))
 	{
             $plotgraph = 1;
             $dograph[$arraycount] = 1; # ACRM
-	}
+        }
         else
         {
             $dograph[$arraycount] = 0; # ACRM
@@ -207,7 +357,7 @@ sub HandlePerRes
         }    
         $arraycount++;
     }
-
+        
     if($plotgraph)
     {
         $filename = Graph($::progname,$rescount, \@seq, \@array_names, \@dograph, \@graphtype, @values);
@@ -217,7 +367,17 @@ sub HandlePerRes
     if($threshold = $prediction->getElementsByTagName("threshold")->item(0))
     {
 	$thrdesctag = $threshold->getElementsByTagName("description")->item(0);
-	$thrdesc = $thrdesctag->getFirstChild->getNodeValue;
+        if($thrdesctag)
+        {
+            if(my $td = $thrdesctag->getFirstChild)
+            {
+                my $thrdesccheck = $td->getNodeValue;
+                if($thrdesccheck)
+                {
+                    $thrdesc = $thrdesccheck;
+                }
+            }
+        }
 	
 	for(my $i=0; $i<$rescount; $i++)
 	{
@@ -225,16 +385,26 @@ sub HandlePerRes
 	}
 	foreach my $thrrestag ($threshold->getElementsByTagName("thr-res"))
 	{ 
-	    my $thrcheck =  $thrrestag->getFirstChild->getNodeValue;
-	    $thrres[$thrcheck-1] = 1;
-	}
+	    if(my $tc =  $thrrestag->getFirstChild)
+            {
+                my $thrcheck = $tc->getNodeValue;
+                $thrcheck =~ s/\s+//g;
+                if($thrcheck)
+                {
+                    $thrres[$thrcheck-1] = 1;
+                }
+            }
+        }
     }
     
     # Get each character array from the predictions
     foreach my $chararray ($prediction->getElementsByTagName("perres-character"))
     {
         my $valuetype = $chararray->getAttribute('name');
-        push @array_names, $valuetype;
+        if($valuetype)
+        {
+            push @array_names, $valuetype;
+        }
 
         $doPrintTable = 1;
         
@@ -245,12 +415,26 @@ sub HandlePerRes
         }
 
         # now stuff the residue numbers and values into a pair of arrays and print them
+
+        my $valuecheck = 0;
         foreach my $value ($chararray->getElementsByTagName("value-perres"))
         {
             $resnum = $value->getAttribute('residue');
-            $values[$arraycount][$resnum-1] = $value->getFirstChild->getNodeValue;
-	}
+            if($resnum)
+            {
+                if(my $content = $value->getFirstChild)
+                {
+                    $values[$arraycount][$resnum-1] = $content->getNodeValue;
+                    $valuecheck++;
+                }
+            }
+        }
 
+        if($valuecheck == 0)
+        {
+            print "<p class='warning'>This server is not responding</p>\n"; 
+            return;
+        }
           
         $clrmin[$arraycount] = $clrmax[$arraycount] = 0;
         
@@ -265,7 +449,7 @@ sub HandlePerRes
 
     if($thrdesc)
     {
-	print "<h4>Threshold description : $thrdesc</h4>\n";
+	print "<h4>Threshold description :</h4><p>$thrdesc</p>\n";
     }
 
         
@@ -325,16 +509,28 @@ sub HandlePerDom
         foreach my $value ($perdom->getElementsByTagName("value-perdom"))
         {
             my $label = $value->getAttribute('label');
-            my $txt = $value->getFirstChild->getNodeValue;
+            my $text;
+            if(my $txt = $value->getFirstChild)
+            {
+                $text = $txt->getNodeValue;
+                $text =~ s/^\s+//g;
+            }
             
-            print "<td>$label : $txt</td>";
+            if(($label) && ($text))
+            {
+                print "<td>$label : $text</td>";
+            }
+            else
+            {
+                print "<td>Prediction not available</td>";
+            }
         }
-        
+       
         print "</tr>\n";
     }
     print "</table>\n"  if($gotPerdom);
     
-    
+    my $valuecheck = 0;
     foreach my $perdom_desc ($prediction->getElementsByTagName("perdom-description"))
     {
         my $class = $perdom_desc->getAttribute('class');
@@ -343,12 +539,23 @@ sub HandlePerDom
         $classname = "$class : $name" if($class ne "");
 
         print "<h4>$classname</h4>\n";
-        my $txt = $perdom_desc->getFirstChild->getNodeValue;
-        print "<p>\n$txt\n</p>\n";
+       
+        if(my $txt = $perdom_desc->getFirstChild)
+        {
+            my $text = $txt->getNodeValue;
+            $text =~ s/\s+//g;
+            if($text)
+            {
+                print "<p>\n$text\n</p>\n";
+                $valuecheck++;
+            }
+        }
+        if($valuecheck == 0)
+        {
+            print "<p>\nDescription not available\n</p>\n";
+        }        
     }
 }
-
-
 
 
 ##############################################################################
@@ -359,36 +566,78 @@ sub HandlePerSeq
     my (@array_names, $arraycount, $doPrintValues, @valnames, @description, $desc, $val, @value, @valuehglt);
     $arraycount = 0;
     $doPrintValues = 0;
-    
+    my $counter = 0;
 
     foreach my $perseq ($prediction->getElementsByTagName("perseq"))
     {
         my $valuetype = $perseq->getAttribute('name');
-    	push @valnames, $valuetype;
-        
+        if($valuetype)
+        {
+            push @valnames, $valuetype;
+        }
+        else
+        {
+            push @valnames, 'Unknown';
+        }
+
         $doPrintValues = 1;
         
         # SVVD 16.06.05
         # ACRM Corrected syntax 17.06.05
     	my $descriptiontag = $perseq->getElementsByTagName("description")->item(0);
+        my $valuecheck = 0;
         if($descriptiontag)
         {
-            $desc = $descriptiontag->getFirstChild->getNodeValue;
-            push @description, $desc;
+            if(my $dscr = $descriptiontag->getFirstChild)
+            {
+                my $desc = $dscr->getNodeValue;
+                $desc =~ s/^\s+//g;
+                if($desc)
+                {
+                    push @description, $desc;
+                    $valuecheck++;
+                }
+            }
         }     
-
+        
+        if($valuecheck == 0)
+        {
+            push @description, 'Description not available';
+        }
+        
         # SVVD 16.06.05
         # ACRM 17.06.05 - went back to old style for clarity
+
+        my $valuecheck = 0;
     	my $valuetag = $perseq->getElementsByTagName("value-perseq")->item(0);
         if($valuetag) # ACRM 15.06.05
         {
             my $valuehl = $valuetag->getAttribute('highlight');
             push @valuehglt, $valuehl;
-            $val = $valuetag->getFirstChild->getNodeValue;
-            push @value, $val;
+            if(my $val = $valuetag->getFirstChild)
+            {
+                my $content = $val->getNodeValue;
+                $content =~ s/^\s+//g;
+                if($content)
+                {
+                    push @value, $content;
+                    $valuecheck++;
+                }
+                
+            }
+        }
+        if($valuecheck == 0)
+        {
+            push @value, 'Prediction not available';
+            $counter++;
+        }
+        if($counter>=2)
+        {
+            print "<p class='warning'>This server is not responding</p>\n"; 
+            return;
         }
     }
-
+    
     if($doPrintValues)
     {
     	PrintValues(\@valnames, \@description, \@valuehglt, \@value);
@@ -751,6 +1000,11 @@ sub PrintHTMLHeader
     .highlight {
                 background: orange;
                }
+    .warning {
+              background: red;
+              font: 18pt Arial,Helvetica,sans-serif;
+              text-align: center;
+             }
     .results {
               background: #ffffff;
               border: thin solid black;

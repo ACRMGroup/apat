@@ -4,8 +4,8 @@
 #   Program:    APAT: netgly
 #   File:       2netgly.pl
 #   
-#   Version:    V1.0
-#   Date:       14.03.05
+#   Version:    V1.2
+#   Date:       15.08.05
 #   Function:   APAT plug-in wrapper for NetGly
 #   
 #   Copyright:  (c) University of Reading / S.V.V. Deevi 2005
@@ -47,7 +47,8 @@
 #   Revision History:
 #   =================
 #   V1.0  14.03.05 Original
-#
+#   V1.1  21.07.05 - tidied up version with removal of unwanted lines of code.
+#   V1.2  15.08.05 - Produces additional tags called <info> and <link> 
 #*************************************************************************
 use strict; 
 
@@ -57,19 +58,15 @@ use LWP::UserAgent;
 
 my $parser = new XML::DOM::Parser;
 my $doc = $parser->parsefile ($ARGV[0]);
-my ($sequenceidtag, $sequenceid, $origin, $sequencetag, $sequence);
-my ($emailaddresstag, $emailaddress, @sqtest);
-my ($r, @residue, $dt, @lines);
+my ($sequenceidtag, $sequenceid, $sequencetag, $sequence, $link);
+my ($r, @residue, $dt, @lines, @sqtest);
 
 foreach my $input ($doc->getElementsByTagName("input"))
 {
     $sequenceidtag = $input->getElementsByTagName("sequenceid")->item(0);
     $sequenceid = $sequenceidtag->getFirstChild->getNodeValue;
-    $origin  = $sequenceidtag->getAttribute('origin');
     $sequencetag = $input->getElementsByTagName("sequence")->item(0);
     $sequence = $sequencetag->getFirstChild->getNodeValue;	
-    $emailaddresstag = $input->getElementsByTagName("emailaddress")->item(0);
-    $emailaddress = $emailaddresstag->getFirstChild->getNodeValue;
 }
 
 $sequence =~ s/\s+//g;
@@ -99,6 +96,7 @@ sub netoglyc
     print <<__EOF;
     <result program='NetOGlyc' version='3.1'>
         <function> Protein Glycosylation sites Prediction</function>
+        <info href='http://www.cbs.dtu.dk/services/NetOGlyc/'>NetOGlyc Web Server</info>
 	<run>
 	  <params>
 	     <param name='Generate Graphics' value='Unchecked'/>
@@ -107,6 +105,7 @@ sub netoglyc
           <date>$dt</date>
         </run>
         <predictions>
+           <link href='$link'>Actual prediction(native, unparsed form)- available only for a limited time</link>
 	   <perres-number name='gscore' clrmin = '0.0' clrmax = '1.0' graph='1' graphtype='bars'>
 __EOF
                for($i=0;$i<@$Gscore_ref;$i++)
@@ -212,6 +211,8 @@ sub RunNetOGlyc
     # The URL is now the one for the results page
     $req = CreateGetRequest($url);
     $result = GetContent($ua, $req);
+    $link = $url;
+    $link =~ s/&/&amp;/g;
 
     return($result);
 }

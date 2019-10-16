@@ -1,0 +1,117 @@
+.TH MIX l "23 August 2005" "Rev. 1.00"
+.SH NAME
+\fBmix\fP \- create APAT XML input file from a FASTA sequence
+.SH SYNTAX
+.B mix.pl
+[[ -plant ] file.faa email out.xml]
+
+.B mix.pl 
+-h
+
+.B mix.pl 
+-l
+
+.B mix.pl 
+-setdefaults 
+[-d=file] 
+email:email_address
+
+.B mix.pl 
+[-f] 
+[-d=file] 
+[server:param=value[,param=value...]...]
+file.faa
+
+.B mix.pl
+
+
+.SH DESCRIPTION
+The
+.I mix
+program takes a protein sequence file in FASTA format and converts it
+to an APAT input XML file which must also be specified on the command
+line. 
+.LP
+.I mix
+can be run in various ways to store defaults so that you only need
+to specify a sequence file on normal runs or can be run fully
+interactively.
+.LP
+APAT is a system for combining annotations/predictions from a number
+of servers either local or across the web.
+.SH USAGE
+
+.B mix.pl -h
+.LP
+Prints this help message.
+.LP
+.B mix.pl -l
+.LP
+Lists the known servers and their options and parameters.
+.LP
+.B mix.pl -setdefaults [-d=file] email:email_address [server:param=value[,param=value...]...]
+.LP
+Stores defaults to the file specified with 
+.I -d 
+or to 
+.I ~/.apatrc
+if no file is specified. The file is over-written, so you must
+specify defaults for all servers you want to use. If values
+contain spaces, each server: section must be contained in inverted
+commas.
+.LP 
+.B ./mix.pl [-f] [-d=file] [server:param=value[,param=value...]...] file.faa
+.LP
+The normal mode of operation. Optionally allows you to override any
+defaults on the command line and reads a FASTA file generating an XML
+output file. Defaults may be read from a file specified with the
+.I -d
+option or from 
+.I ~/.apatrc
+For any servers 
+.I mix
+knows about, it checks that the options and values are valid. The 
+.I -f 
+flag overrides this check. If values contain spaces, each 
+.I server: 
+section must be contained in inverted commas.
+.LP
+.B ./mix.pl
+.LP
+The other normal mode of operation. No defaults are used, but
+prompts for values for all servers/options which mix knows
+about.
+
+.SH PARAMETERS
+.TP 15
+.I file.faa
+FASTA file containing a protein sequence
+.TP 15
+.I email
+Your EMail address. Required by some servers. May also be used for
+servers that return results by EMail
+.TP 15
+.I out.xml
+XML file in APAT input XML format
+
+.SH OPTIONS
+Options are (see above for detailed description)
+.TP 15
+.BI \-h
+Prints a help mesasge
+.TP 15
+.BI \-l
+List the servers 
+.I mix
+knows about
+.TP 15
+.BI -setdefaults
+Used to create a defaults file so that parameters not specified
+are set automatically
+.SH BUGS
+None known
+.SH SEE ALSO
+apat(1), mas-mas.pl(1), master.pl(1), display.pl(1)
+.SH AUTHOR
+S.V.V. Deevi, The University of Reading
+

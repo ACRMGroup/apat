@@ -6,7 +6,7 @@
 #   
 #   Version:    V1.0
 #   Date:       14.03.05
-#   Function:   APAT CGI scerver
+#   Function:   APAT CGI server
 #   
 #   Copyright:  (c) University of Reading / S.V.V. Deevi 2005
 #   Author:     S.V.V. Deevi
@@ -56,9 +56,15 @@ $pid = $$;
 
 # Get parameters from the web page
 $seqid = $cgi->param('SID1');
+$seqid =~ s/\r//g;
 $sequence = $cgi->param('S1');
+$sequence =~ s/\r//g;
 $type = $cgi->param('D1');
+$type =~ s/\r//g;
+$type_psort = $cgi->param('D2');
+$type_psort =~ s/\r//g;
 $emailaddress = $cgi->param('T1');
+$emailaddress =~ s/\r//g;
 
 $type =~ s/\s+//g;
 $emailaddress =~ s/\s+//g;
@@ -75,7 +81,7 @@ if($seqid eq '')
 }
 
 #Build the XML
-$xml_format = "<input>\n<sequenceid origin = '$type'>$seqid</sequenceid>\n<sequence>$sequence</sequence>\n<emailaddress>$emailaddress</emailaddress>\n</input>";
+$xml_format = "<input>\n<sequenceid>$seqid</sequenceid>\n<sequence>$sequence</sequence>\n<emailaddress>$emailaddress</emailaddress>\n<parameter server='targetp' param='origin' value='$type' />\n<parameter server='psort' param='origin' value='$type_psort' />\n</input>";
 
 
 $prog_dir = "{SUBS1}";

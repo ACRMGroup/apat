@@ -4,8 +4,8 @@
 #   Program:    APAT: DAS-TMfilter
 #   File:       4das.pl
 #   
-#   Version:    V1.0
-#   Date:       14.03.05
+#   Version:    V1.2
+#   Date:       15.08.05
 #   Function:   APAT plug-in wrapper for DAS-TMfilter
 #   
 #   Copyright:  (c) University of Reading / S.V.V. Deevi 2005
@@ -47,7 +47,8 @@
 #   Revision History:
 #   =================
 #   V1.0  14.03.05 Original
-#
+#   V1.1  25.07.05 - tidied up version with removal of unwanted lines of code which also now prints the comment field correctly.
+#   V1.2  15.08.05 - Produces additional tags called <info> and <link> 
 #*************************************************************************
 use strict;
 
@@ -56,18 +57,14 @@ use LWP::UserAgent;
 
 my $parser = new XML::DOM::Parser;
 my $doc = $parser->parsefile($ARGV[0]);
-my ($sequenceidtag, $sequenceid, $origin, $sequencetag, $sequence);
-my ($emailaddresstag, $emailaddress);
+my ($sequenceidtag, $sequenceid, $sequencetag, $sequence);
 
 foreach my $input ($doc->getElementsByTagName("input"))
 {
     $sequenceidtag = $input->getElementsByTagName("sequenceid")->item(0);
     $sequenceid = $sequenceidtag->getFirstChild->getNodeValue;
-    $origin  = $sequenceidtag->getAttribute('origin');
     $sequencetag = $input->getElementsByTagName("sequence")->item(0);
     $sequence = $sequencetag->getFirstChild->getNodeValue;      
-    $emailaddresstag = $input->getElementsByTagName("emailaddress")->item(0);
-    $emailaddress = $emailaddresstag->getFirstChild->getNodeValue;
 }
 
 $sequence =~ s/\s+//g;
@@ -90,6 +87,7 @@ sub das
     print <<__EOF;
     <result program='DAS-TM filter'>
        <function>Transmembrane protein predictions</function>
+       <info href='http://mendel.imp.univie.ac.at/sat/DAS/DAS.html'>DAS-TMfilter Web Server</info>
        <run>
           <params>
              <param name = 'long output' value = 'Checked'/>
@@ -99,7 +97,7 @@ sub das
           <date>$dt</date>
        </run>
        <predictions>
-          <perres-number name = 'Score' clrmin = '0.0' clrmax = '5.5' graph='1' graphtype='lines'>
+           <perres-number name = 'Score' clrmin = '0.0' clrmax = '5.5' graph='1' graphtype='lines'>
 __EOF
                 $count = 0;
                 for($i=0;$i<@$Score;$i++)
@@ -161,7 +159,7 @@ sub RunDAS
     $ua = CreateUserAgent($webproxy);
     $req = CreatePostRequest($url, $post);
     $result = GetContent($ua, $req);
-
+    
     return($result);
 }
 
@@ -274,7 +272,12 @@ sub perdom
                 $begin=$fields[4];
                 $end=$fields[6];
                 $Evalue=$fields[7];
-                $comment=$fields[8];
+               #$comment=$fields[8];
+                $comment = '';
+                if(/(!!!.*)$/)
+                {
+                    $comment = $1;
+                }
 
                 $highlight=0;
 
@@ -331,24 +334,6 @@ __EOF
     }
 }
 
-#################################################################
-
-sub max
-{
-    my($x,$y) = @_;
-    my($z);
-    $z = ($x>$y)?$x:$y;
-    return($z);
-}
-
-#################################################################
-sub min
-{
-    my($x,$y) = @_;
-    my($z);
-    $z = ($x<$y)?$x:$y;
-    return($z);
-}
 
 
 

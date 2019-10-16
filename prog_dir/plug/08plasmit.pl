@@ -1,11 +1,11 @@
-#!{PERL}
+#!{PERL} -w
 #*************************************************************************
 #
 #   Program:    APAT: Plasmit
 #   File:       8plasmit.pl
 #   
-#   Version:    V1.0.1
-#   Date:       13.05.05
+#   Version:    V1.1
+#   Date:       15.08.05
 #   Function:   APAT plug-in wrapper for PLASMIT
 #   
 #   Copyright:  (c) University of Reading / S.V.V. Deevi 2005
@@ -46,9 +46,8 @@
 #
 #   Revision History:
 #   =================
-#   V1.0    13.05.05 Original
-#   V1.0.1  26.05.05 New plug-ins
-#
+#   V1.0  13.05.05 Original
+#   V1.1  15.08.05 Produces additional tag called <info>
 #*************************************************************************
 use strict;
 use XML::DOM;
@@ -64,11 +63,8 @@ foreach my $input ($doc->getElementsByTagName("input"))
 {
     $sequenceidtag = $input->getElementsByTagName("sequenceid")->item(0);
     $sequenceid = $sequenceidtag->getFirstChild->getNodeValue;
-    $origin  = $sequenceidtag->getAttribute('origin');
     $sequencetag = $input->getElementsByTagName("sequence")->item(0);
     $sequence = $sequencetag->getFirstChild->getNodeValue;	
-    $emailaddresstag = $input->getElementsByTagName("emailaddress")->item(0);
-    $emailaddress = $emailaddresstag->getFirstChild->getNodeValue;
 }
 
 $sequence =~ s/\s+//g;
@@ -110,7 +106,6 @@ sub RunPlasmit
     # examining the submission web page
     # NOTE! For some reason this server NEEDS the configfile to come first
 
-    $orgtype = OrgType($origin);
     $post = "sequence=>$sequenceid\n$seq&output=long";
 
     $ua = CreateUserAgent($webproxy);
@@ -164,24 +159,6 @@ sub CreateUserAgent
 
 
 #######################################################################
-sub OrgType
-{
-    my($origin) = @_;
-    my $orgtype;
-
-    if($origin eq 'non-plant')
-    {
-	$orgtype = '2';
-    }
-    elsif($origin eq 'plant')
-    {
-	$orgtype = '1';
-    }
-    return $orgtype;
-}
-
-
-#######################################################################
 
 sub parse
 {
@@ -209,8 +186,9 @@ sub parse
     
 
     print <<__EOF;
-    <result program='Plasmit' version='0'>
+    <result program='Plasmit'>
        <function>Prediction of mitochondrial transit peptides in Plasmodium falciparum</function>
+       <info href='http://gecco.org.chemie.uni-frankfurt.de/plasmit/'>PlasMit Web Server</info>
        <run>
           <params>
              <param name = 'prediction only' value = 'Checked'/>

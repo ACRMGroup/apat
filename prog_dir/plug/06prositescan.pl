@@ -1,11 +1,11 @@
-#!{PERL}
+#!{PERL} -w
 #*************************************************************************
 #
 #   Program:    APAT: ProSiteScan
 #   File:       6prositescan.pl
 #   
-#   Version:    V1.0
-#   Date:       14.03.05
+#   Version:    V1.2
+#   Date:       15.08.05
 #   Function:   APAT plug-in wrapper for ProSiteScan
 #   
 #   Copyright:  (c) University of Reading / S.V.V. Deevi 2005
@@ -47,28 +47,25 @@
 #   Revision History:
 #   =================
 #   V1.0  14.03.05 Original
-#
+#   V1.1  21.07.05 - tidied up version with removal of unwanted lines of code.
+#   V1.2  15.08.05 - Produces additional tag called <info>
 #*************************************************************************
 use strict; 
 
 use XML::DOM;
 
-$::prositedir = "{SUBS1}";
+$::prositedir = "/home/sri/prosite/ps_scan";
 
 my $parser = new XML::DOM::Parser;
 my $doc = $parser->parsefile ($ARGV[0]);
-my ($sequenceidtag, $sequenceid, $origin, $sequencetag, $sequence);
-my ($emailaddresstag, $emailaddress);
+my ($sequenceidtag, $sequenceid, $sequencetag, $sequence);
 
 foreach my $input ($doc->getElementsByTagName("input"))
 {
     $sequenceidtag = $input->getElementsByTagName("sequenceid")->item(0);
     $sequenceid = $sequenceidtag->getFirstChild->getNodeValue;
-    $origin  = $sequenceidtag->getAttribute('origin');
     $sequencetag = $input->getElementsByTagName("sequence")->item(0);
     $sequence = $sequencetag->getFirstChild->getNodeValue;	
-    $emailaddresstag = $input->getElementsByTagName("emailaddress")->item(0);
-    $emailaddress = $emailaddresstag->getFirstChild->getNodeValue;
 }
 
 $sequence =~ s/\s+//g;
@@ -96,15 +93,16 @@ sub prositescan
     $ENV{'PATH'} .= ":$::prositedir";
 
     $output = `cd $::prositedir; ./ps_scan.pl -o gff $inputfile`;
-    `\rm -rf $tmpdir`;
+    `rm -rf $tmpdir`;
     @lines = linebyline($output);
     
     print <<__EOF;
     <result program='PrositeScan' version='1.20'>
        <function>Protein profiles and motifs Prediction</function>
+       <info>Local Prositescan Server</info>
        <run>
           <params>
-             <param name = 'skip frequently matching patterns' value = 'UnChecked'/>
+             <param name = 'skip frequently matching patterns' value = 'Unchecked'/>
 	     <param name = 'Show low level score' value = 'Unchecked'/>
 	     <param name = 'Do not scan profiles' value = 'Unchecked'/>
 	     <param name = 'Output format:gff' value = 'Checked'/>

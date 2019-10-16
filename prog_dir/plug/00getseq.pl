@@ -4,8 +4,8 @@
 #   Program:    APAT: getseq
 #   File:       0getseq.pl
 #   
-#   Version:    V1.0
-#   Date:       14.03.05
+#   Version:    V1.1
+#   Date:       15.08.05
 #   Function:   APAT plug-in wrapper for obtaining the sequence
 #   
 #   Copyright:  (c) University of Reading / S.V.V. Deevi 2005
@@ -47,7 +47,7 @@
 #   Revision History:
 #   =================
 #   V1.0  14.03.05 Original
-#
+#   V1.1  15.08.05 copes with the modified input XML file and produces additional tags called <emailaddress> and <parameter>
 #*************************************************************************
 use strict;
 
@@ -56,27 +56,31 @@ use XML::DOM;
 my $parser = new XML::DOM::Parser;
 my $doc = $parser->parsefile ($ARGV[0]);
 my ($sequenceidtag, $sequenceid, $origin, $sequencetag, $sequence);
-my ($emailaddresstag, $emailaddress, $sequence, @rs, $i);
+my ($emailaddresstag, $emailaddress, $sequence, @res, $i);
 
 foreach my $input ($doc->getElementsByTagName("input"))
 {
     $sequenceidtag = $input->getElementsByTagName("sequenceid")->item(0);
     $sequenceid = $sequenceidtag->getFirstChild->getNodeValue;
-    $origin  = $sequenceidtag->getAttribute('origin');
     $sequencetag = $input->getElementsByTagName("sequence")->item(0);
     $sequence = $sequencetag->getFirstChild->getNodeValue;	
-    $emailaddresstag = $input->getElementsByTagName("emailaddress")->item(0);
-    $emailaddress = $emailaddresstag->getFirstChild->getNodeValue;
 }
 
 $sequence =~ s/\s+//g;
-@rs = split(//,$sequence);
+@res = split(//,$sequence);
 
 print "<input>\n   <seqid>$sequenceid</seqid>\n";
-for($i=0;$i<=$#rs;$i++)
+for($i=0;$i<=$#res;$i++)
 {
-    print "   <seq>$rs[$i]</seq>\n"; 
+    print "   <seq>$res[$i]</seq>\n"; 
 }
+
+while(<>)
+{
+    print $_,if(/<emailaddress/);
+    print $_,if(/<parameter/);   
+}
+
 print "</input>\n";
 
 

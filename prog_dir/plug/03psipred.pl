@@ -4,8 +4,8 @@
 #   Program:    APAT: psipred
 #   File:       3psipre.pl
 #   
-#   Version:    V1.0
-#   Date:       14.03.05
+#   Version:    V1.2
+#   Date:       15.08.05
 #   Function:   APAT plug-in wrapper for PSIPred
 #   
 #   Copyright:  (c) University of Reading / S.V.V. Deevi 2005
@@ -47,28 +47,25 @@
 #   Revision History:
 #   =================
 #   V1.0  14.03.05 Original
-#
+#   V1.1  21.07.05 - tidied up version with removal of unwanted lines of code.
+#   V1.2  15.08.05 - Produces additional tag called <info> 
 #*************************************************************************
 use strict;
 
 use XML::DOM;
 
-$::progdir = "{SUBS1}"; 
+$::progdir = "/home/sri/psipred"; 
 
 my $parser = new XML::DOM::Parser;
 my $doc = $parser->parsefile ($ARGV[0]);
-my ($sequenceidtag, $sequenceid, $origin, $sequencetag, $sequence);
-my ($emailaddresstag, $emailaddress);
+my ($sequenceidtag, $sequenceid, $sequencetag, $sequence);
 
 foreach my $input ($doc->getElementsByTagName("input"))
 {
     $sequenceidtag = $input->getElementsByTagName("sequenceid")->item(0);
     $sequenceid = $sequenceidtag->getFirstChild->getNodeValue;
-    $origin  = $sequenceidtag->getAttribute('origin');
     $sequencetag = $input->getElementsByTagName("sequence")->item(0);
     $sequence = $sequencetag->getFirstChild->getNodeValue;	
-    $emailaddresstag = $input->getElementsByTagName("emailaddress")->item(0);
-    $emailaddress = $emailaddresstag->getFirstChild->getNodeValue;
 }
 
 $sequence =~ s/\s+//g;
@@ -112,6 +109,7 @@ sub psipred
 	print <<__EOF;
 	<result program='PsiPred' version='2.4'>
 	<function> Secondary Structure Prediction</function>
+           <info>PSIPRED Local Server</info>
 	   <run>
 	      <params>
 	        <param name = 'Predict Secondary Structure' value = 'Checked'/>
@@ -125,7 +123,7 @@ sub psipred
              <date>$dt</date>
              </run>
           <predictions> 
-	     <perres-number name = 'ssscore' clrmin = '0' clrmax = '9' gdgraph='1' graphtype='lines'>
+	     <perres-number name = 'ssscore' clrmin = '0' clrmax = '9' graph='1' graphtype='lines'>
 __EOF
                 for($j=0;$j<@$conf_ref;$j++)
                 { 

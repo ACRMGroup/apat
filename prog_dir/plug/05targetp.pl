@@ -4,8 +4,8 @@
 #   Program:    APAT: TargetP
 #   File:       5targetp.pl
 #   
-#   Version:    V1.1
-#   Date:       17.06.05
+#   Version:    V1.2
+#   Date:       15.08.05
 #   Function:   APAT plug-in wrapper for TargetP
 #   
 #   Copyright:  (c) University of Reading / S.V.V. Deevi 2005
@@ -47,8 +47,8 @@
 #   Revision History:
 #   =================
 #   V1.0  14.03.05 Original
-#   V1.1  17.06.05 Fixed to handle change in TargetP output format
-#
+#   V1.1  20.07.05 - Handles the modified output format of targetp server and cope with the modified input XML format
+#   V1.2  15.08.05 - Produces additional tags called <info> and <link> 
 #*************************************************************************
 use strict;
 
@@ -57,18 +57,28 @@ use LWP::UserAgent;
 
 my $parser = new XML::DOM::Parser;
 my $doc = $parser->parsefile ($ARGV[0]);
-my ($sequenceidtag, $sequenceid, $origin, $sequencetag, $sequence);
-my ($emailaddresstag, $emailaddress);
+my ($sequenceidtag, $sequenceid, $origin, $sequencetag, $sequence, $link);
+my ($emailaddresstag, $emailaddress, $parameter, $server);
 
 foreach my $input ($doc->getElementsByTagName("input"))
 {
     $sequenceidtag = $input->getElementsByTagName("sequenceid")->item(0);
     $sequenceid = $sequenceidtag->getFirstChild->getNodeValue;
-    $origin  = $sequenceidtag->getAttribute('origin');
     $sequencetag = $input->getElementsByTagName("sequence")->item(0);
     $sequence = $sequencetag->getFirstChild->getNodeValue;	
-    $emailaddresstag = $input->getElementsByTagName("emailaddress")->item(0);
-    $emailaddress = $emailaddresstag->getFirstChild->getNodeValue;
+
+    foreach $parameter($input->getElementsByTagName("parameter"))
+    {
+        $server = $parameter->getAttribute('server');
+        if($server eq 'targetp')
+        {
+            my($param) = $parameter->getAttribute('param');
+            if($param eq 'origin')
+            {
+                $origin = $parameter->getAttribute('value');
+            }
+        }
+    }
 }
 
 $sequence =~ s/\s+//g;
@@ -87,6 +97,7 @@ sub targetp
     $dt =~ s/\n//;
     $results = RunTargetP($seq,$origin);
     @lines = split(/\n/,$results);
+
     if($origin eq 'non-plant')
     {
 	($mTP_ref,$SP_ref,$other_ref,$Loc_ref,$RC_ref,$TPlen_ref) = parse(@lines);
@@ -95,19 +106,21 @@ sub targetp
     {
 	($cTP_ref,$mTP_ref,$SP_ref,$other_ref,$Loc_ref,$RC_ref,$TPlen_ref) = parse(@lines);
     }
+
     print <<__EOF;
     <result program='TargetP' version='1.01'>
        <function>Protein subcellular location Prediction</function>
+       <info href='http://www.cbs.dtu.dk/services/TargetP/'>TargetP Web Server</info>
        <run>
           <params>
-             <param name = 'non plant sequence' value = 'User defined'/>
-             <param name = 'plant sequence' value = 'User defined'/>
-	     <param name = 'cleavage sites' value = 'Checked'/>
+             <param name = '$origin' value = 'Checked'/>
+             <param name = 'cleavage sites' value = 'Checked'/>
 	     <param name = 'no cutoffs' value = 'Checked'/>
           </params>
 	  <date>$dt</date>
        </run>
        <predictions>
+       <link href='$link'>Actual prediction(native, unparsed form)- available only for a limited time</link>
 __EOF
           if($origin eq 'plant')
           {
@@ -257,6 +270,8 @@ sub RunTargetP
     # The URL is now the one for the results page
     $req = CreateGetRequest($url);
     $result = GetContent($ua, $req);
+    $link = $url;
+    $link =~ s/&/&amp;/g;
 
     return($result);
 }
@@ -329,12 +344,12 @@ sub parse
     for($i=0; $i<@data; $i++)
     {
 	$_ = $data[$i];
-	if(/^Name/)             # SVVD 16.06.05. No longer has leading #
+	if(/^Name/)
 	{
 	    $i++;
 	    $in=1;
 	}
-	elsif(/^------/)        # SVVD 16.06.05. No longer has leading #
+	elsif(/^------/)
 	{
 	    $in=0;  
 	}

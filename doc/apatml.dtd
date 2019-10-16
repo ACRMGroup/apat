@@ -2,13 +2,26 @@
 
 <!ELEMENT description ( #PCDATA ) >
 
+<!ELEMENT emailaddress ( #PCDATA ) >
+
 <!ELEMENT function ( #PCDATA ) >
 
-<!ELEMENT input ( seqid, seq+ ) >
+<!ELEMENT info ( #PCDATA ) >
+<!ATTLIST info href CDATA #IMPLIED >
+
+<!ELEMENT input ( seqid, seq+, emailaddress, parameter+ ) >
+
+<!ELEMENT link ( #PCDATA ) >
+<!ATTLIST link href CDATA #REQUIRED >
 
 <!ELEMENT param EMPTY >
 <!ATTLIST param name CDATA #REQUIRED >
 <!ATTLIST param value CDATA #REQUIRED >
+
+<!ELEMENT parameter EMPTY >
+<!ATTLIST parameter param CDATA #REQUIRED >
+<!ATTLIST parameter server CDATA #REQUIRED >
+<!ATTLIST parameter value CDATA #REQUIRED >
 
 <!ELEMENT params ( param+ ) >
 
@@ -36,9 +49,9 @@
 <!ELEMENT perseq ( description, value-perseq ) >
 <!ATTLIST perseq name CDATA #REQUIRED >
 
-<!ELEMENT predictions ( perdom | perdom-description | perres-character | perres-number | perseq | threshold | value-perseq )* >
+<!ELEMENT predictions (link | perdom | perdom-description | perres-character | perres-number | perseq | threshold)* >
 
-<!ELEMENT result ( function, run, predictions ) >
+<!ELEMENT result ( function, info, run, predictions ) >
 <!ATTLIST result program CDATA #REQUIRED >
 <!ATTLIST result version CDATA #IMPLIED >
 

@@ -1,9 +1,13 @@
 <!ELEMENT emailaddress ( #PCDATA ) >
 
-<!ELEMENT input ( sequenceid, sequence, emailaddress ) >
+<!ELEMENT input ( sequenceid, sequence, emailaddress, parameter+ ) >
+
+<!ELEMENT parameter EMPTY >
+<!ATTLIST parameter param CDATA #REQUIRED >
+<!ATTLIST parameter server CDATA #REQUIRED >
+<!ATTLIST parameter value CDATA #REQUIRED >
 
 <!ELEMENT sequence ( #PCDATA ) >
 
 <!ELEMENT sequenceid ( #PCDATA ) >
-<!ATTLIST sequenceid origin CDATA #REQUIRED >
 

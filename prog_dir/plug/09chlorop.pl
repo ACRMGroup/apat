@@ -1,12 +1,12 @@
-#!{PERL} 
+#!{PERL}
 #*************************************************************************
 #
-#   Program:    APAT: netpho
+#   Program:    APAT: chloroP
 #   File:       1netpho.pl
 #   
-#   Version:    V1.1
-#   Date:       21.04.05
-#   Function:   APAT plug-in wrapper for NETPHOS
+#   Version:    V1.2
+#   Date:       15.08.05
+#   Function:   APAT plug-in wrapper for CHLOROP
 #   
 #   Copyright:  (c) University of Reading / S.V.V. Deevi 2005
 #   Author:     S.V.V. Deevi
@@ -46,9 +46,9 @@
 #
 #   Revision History:
 #   =================
-#   V1.0  14.03.05 Original
-#   V1.1  21.04.05 Reverted to a pre-release piece of code
-#
+#   V1.0  09.05.05 Original
+#   V1.1  25.07.05 - tidied up version with removal of unwanted lines of code.
+#   V1.1  15.08.05 - Produces additional tags called <info> and <link> 
 #*************************************************************************
 use strict; 
 
@@ -57,86 +57,73 @@ use LWP::UserAgent;
 
 my $parser = new XML::DOM::Parser;
 my $doc = $parser->parsefile ($ARGV[0]);
-my ($sequenceidtag, $sequenceid, $origin, $sequencetag, $sequence);
-my ($emailaddresstag, $emailaddress, @sqtest);
+my ($sequenceidtag, $sequenceid, $sequencetag, $sequence, $link);
 
 foreach my $input ($doc->getElementsByTagName("input"))
 {
     $sequenceidtag = $input->getElementsByTagName("sequenceid")->item(0);
     $sequenceid = $sequenceidtag->getFirstChild->getNodeValue;
-    $origin  = $sequenceidtag->getAttribute('origin');
     $sequencetag = $input->getElementsByTagName("sequence")->item(0);
     $sequence = $sequencetag->getFirstChild->getNodeValue;	
-    $emailaddresstag = $input->getElementsByTagName("emailaddress")->item(0);
-    $emailaddress = $emailaddresstag->getFirstChild->getNodeValue;
 }
 
 $sequence =~ s/\s+//g;
-@sqtest = split(//,$sequence);
 
-netphos($sequence);
+ChloroP($sequence);
 
 
 ##############################################################################
-##########                        NETPHOS                          ###########
-sub netphos
+##########                        CHLOROP                          ###########
+sub ChloroP
 {
     my($sq) = @_;
-    my ($results, $dt, @lines, @score, $count, $k, $val, @thrres, $tr);
+    my ($results, $dt, @lines, $Score, $cTP, $CSscore, $cTPlength, $i);
     $dt=`date`;
     $dt =~ s/\n//;
-    $results = RunNetPhos($sq);
+    $results = RunChloroP($sq);
+    
     @lines = split(/\n/,$results);
-    @score = parse(@lines);
+
+    ($Score, $cTP, $CSscore, $cTPlength) = parse(@lines);
 
     print <<__EOF;
-    <result program='NetPhos' version='2.0'>
-       <function>Protein Phosphorylation sites Prediction</function>
+    <result program='ChloroP' version='1.1'>
+       <function>prediction of the presence of chloroplast transit peptides (cTP) in protein sequences and the location of potential cTP cleavage sites</function>
+       <info href='http://www.cbs.dtu.dk/services/ChloroP/'>ChloroP Web Server</info>
        <run>
           <params>
-             <param name = 'Serine' value = 'Checked'/>
-	     <param name = 'Threonine' value = 'Checked'/>
-	     <param name = 'Tyrosine' value = 'Checked'/>
-	     <param name = 'Generate Graphics' value = 'unChecked'/>
-	     <param name = 'Threshold' value = '0.500'/>
+              <param name = 'Detailed output' value = 'Unchecked'/>
           </params>
 	  <date>$dt</date>
        </run>
        <predictions>
-          <perres-number name = 'P-score' clrmin = '0.0' clrmax = '1.0' graph='1' graphtype='bars'>
-__EOF
-                $count=1;
-                foreach $val(@score)
-                { 
-	            $k = $count;
-                    $val = 0 if(!defined($val));
-		    printf "              <value-perres residue='$k'>%f</value-perres>\n",$val;
-		    if($val>0.500)
-		    {
-			push(@thrres,$k);
-		    }
-	            $count++;
-                }
-                print <<__EOF;
-          </perres-number>
-	  <threshold>
-	     <description>P-scores greater than 0.5 are considered as positive predictions
-	     </description>
-__EOF
-                foreach $tr(@thrres)
-	        {  
-		    print "              <thr-res>$tr</thr-res>\n";
-		}
-                print <<__EOF;
-	  </threshold>    
-       </predictions>
-    </result>       
+          <link href='$link'>Actual prediction(native, unparsed form)- available only for a limited time</link>
+          <perseq name = 'Score'>
+             <description>It is the output score from the second step network. The prediction cTP/no cTP is based solely on this score.</description>
+             <value-perseq highlight='0'>$Score</value-perseq>
+          </perseq>
+            
+          <perseq name = 'cTP'>
+	     <description>It tells whether or not this is predicted as a cTP-containing sequence.</description>
+             <value-perseq highlight='1'>$cTP</value-perseq>
+          </perseq>
+
+          <perseq name = 'CS-score'> 
+	     <description>It is the MEME scoring matrix score for the suggested cleavage site.</description>
+             <value-perseq highlight='0'>$CSscore</value-perseq>
+          </perseq>
+                 
+          <perseq name = 'cTPlength'>
+             <description>It is the predicted length of the presequence (Please note that the prediction of the transit peptide length is carried out and presented even if its presence is not predicted).</description>
+             <value-perseq highlight='0'>$cTPlength</value-perseq>
+          </perseq>
+       </predictions>       
+    </result>
 __EOF
 }
 
-
 ######################################################################
-sub RunNetPhos
+sub RunChloroP
 {
     my($seq) = @_;
     my($webproxy, $url, $post, $ua, $req, $result);
@@ -157,7 +144,7 @@ sub RunNetPhos
     # These are the data to send to the CGI script, obtained by 
     # examining the submission web page
     # NOTE! For some reason this server NEEDS the configfile to come first
-    $post = "configfile=/usr/opt/www/pub/CBS/services/NetPhos-2.0/NetPhos.cf&seqpaste=$seq&tyrosine=ps&serine=ps&threonine=ps";
+    $post = "configfile=/usr/opt/www/pub/CBS/services/ChloroP-1.1/chlorop.cf&seqpaste=$seq";
 
     $ua = CreateUserAgent($webproxy);
     $req = CreatePostRequest($url, $post);
@@ -178,6 +165,8 @@ sub RunNetPhos
     # The URL is now the one for the results page
     $req = CreateGetRequest($url);
     $result = GetContent($ua, $req);
+    $link = $url;
+    $link =~ s/&/&amp;/g;
 
     return($result);
 }
@@ -246,37 +235,29 @@ sub CreateUserAgent
 sub parse
 {
     my @data =@_;
-    my ($i,$in,@fields,@score);
+    my ($i,$in,@fields,$Score,$cTP,$CSscore,$cTPlength);
+    $in =0;
     for($i=0; $i<@data; $i++)
     {
 	$_ = $data[$i];
-	if(/^Name/)             # -w causes a warning here
-	{
-	    $i++;
-	    $in=1;
-	}
-	elsif(/^______/)
-	{
-	    $in=0;  
-	}
-	elsif($in)
-	{
-	    s/^\s+//;
-	    if(length())
-	    {
-		@fields=split();
-		$score[$fields[1]-1]=$fields[3];
-	    }
-	}
-        elsif(($fields[1]-1 <= $#sqtest+1)) 
-	{
-            # Fixed for V1.1
-            if(!defined($fields[1]) || !$score[$fields[1]-1])
- 	    {
- 		$fields[1] = $#sqtest+1;
- 		$score[$fields[1]-1]=0;
- 	    }
-	}
+        
+        if($in)
+        {
+            @fields = split;
+            last;
+        }
+        else
+        {
+            $in = 1 if(/---/);
+        }              
     }
-    return(@score);
+    $Score = $fields[2];
+    $cTP = $fields[3];
+    $CSscore = $fields[4];
+    $cTPlength = $fields[5];
+    
+    $cTP =~ s/Y/Chloroplast Transit Peptide/;
+    $cTP =~ s/-/Non-Chloroplast Transit Peptide/;
+
+    return($Score,$cTP,$CSscore,$cTPlength);
 }

@@ -1,11 +1,11 @@
-#!{PERL}
+#!{PERL} -w
 #*************************************************************************
 #
 #   Program:    APAT: TMHMM
 #   File:       7TMHMM.pl
 #   
-#   Version:    V1.0.1
-#   Date:       14.03.05
+#   Version:    V1.3
+#   Date:       17.08.05
 #   Function:   APAT plug-in wrapper for TMHMM
 #   
 #   Copyright:  (c) University of Reading / S.V.V. Deevi 2005
@@ -46,9 +46,10 @@
 #
 #   Revision History:
 #   =================
-#   V1.0    14.03.05 Original
-#   V1.0.1  26.05.05 New plug-ins
-#
+#   V1.0  14.03.05 Original
+#   V1.1  25.07.05 - tidied up version with removal of unwanted lines of code.
+#   V1.2  15.08.05 - Produces additional tags called <info> and <link>
+#   V1.3  17.08.05 - Prints threshold description.
 #*************************************************************************
 use strict;
 
@@ -57,18 +58,14 @@ use LWP::UserAgent;
 
 my $parser = new XML::DOM::Parser;
 my $doc = $parser->parsefile($ARGV[0]);
-my ($sequenceidtag, $sequenceid, $origin, $sequencetag, $sequence);
-my ($emailaddresstag, $emailaddress);
+my ($sequenceidtag, $sequenceid, $sequencetag, $sequence, $link);
 
 foreach my $input ($doc->getElementsByTagName("input"))
 {
     $sequenceidtag = $input->getElementsByTagName("sequenceid")->item(0);
     $sequenceid = $sequenceidtag->getFirstChild->getNodeValue;
-    $origin  = $sequenceidtag->getAttribute('origin');
     $sequencetag = $input->getElementsByTagName("sequence")->item(0);
     $sequence = $sequencetag->getFirstChild->getNodeValue;      
-    $emailaddresstag = $input->getElementsByTagName("emailaddress")->item(0);
-    $emailaddress = $emailaddresstag->getFirstChild->getNodeValue;
 }
 
 $sequence =~ s/\s+//g;
@@ -92,6 +89,7 @@ sub TMHMM
     print <<__EOF;
     <result program='TMHMM' version='2.0'>
         <function>predictions of transmembrane helices in protein</function>
+        <info href='http://www.cbs.dtu.dk/services/TMHMM/'>TMHMM Web Server</info>
         <run>
            <params>
               <param name = 'Extensive, with graphics' value = 'Checked'/>
@@ -100,6 +98,7 @@ sub TMHMM
            <date>$dt</date>
         </run>
         <predictions>
+           <link href='$link'>Actual prediction(native, unparsed form)- available only for a limited time</link>
 	   <perres-number name='inscore' clrmin = '0.0' clrmax = '1.0' graph='1' graphtype='bars'>
 __EOF
                for($i=0;$i<@$inscore_ref;$i++)
@@ -128,7 +127,7 @@ __EOF
                print <<__EOF;
            </perres-number>
 	   <threshold>
-	      <description>no
+	      <description>If memscore is the highest among the three, then it is shown as positive prediction.
 	      </description>
 __EOF
               foreach $tr(@$thrres)
@@ -188,6 +187,8 @@ sub RunTMHMM
     # The URL is now the one for the results page
     $req = CreateGetRequest($url);
     $result = GetContent($ua, $req);
+    $link = $url;
+    $link =~ s/&/&amp;/g;
 
     return($result);
 }  
