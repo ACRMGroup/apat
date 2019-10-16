@@ -62,6 +62,10 @@ my($htmltmp, $psipreddir, $psscandir);
 
 $|=1;
 
+print "Installing required RPMs...\n";
+`sudo yum -y install perl-GD perl-GDGraph`;
+    
+
 $perl = GetText("\nEnter the full path to your Perl executable. (For example: /usr/bin/perl): ");
 $dohtml = GetYorN("Do you wish to create an APAT web server? (Y/N) [Y]: ");
 
