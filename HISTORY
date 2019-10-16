@@ -9,3 +9,10 @@ V1.1    15.06.05  Fixed a bug in display.pl when a value-perseq doesn't
 V1.2    17.06.05  Fixed another similar possible bug in display.pl and
                   fixed the TargetP plug-in to handle a change in the
                   output format
+V1.3    23.08.05  Adds an index to the output file, better handling of 
+                  servers which fail to return a result and improved 
+                  handling of additional parameters required by specific 
+                  servers.
+V1.4    30.01.06  Fixed problem in display where it would treat a zero
+                  returned (correctly) by a server in the same was as
+                  if the server had not returned anything

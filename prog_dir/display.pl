@@ -4,8 +4,8 @@
 #   Program:    APAT: display
 #   File:       display.pl
 #   
-#   Version:    V1.4
-#   Date:       17.08.05
+#   Version:    V1.5
+#   Date:       30.01.06
 #   Function:   APAT display program
 #   
 #   Copyright:  (c) University of Reading / S.V.V. Deevi 2005
@@ -53,6 +53,7 @@
 #                  tries not to fail when empty tags are returned.
 #   V1.3  15.08.05 Returns something sensible instead of failing when it comes across faulty XML file. Also provides input details,link to the actual webservers used for various predictions and a link to the actual predictions obtained from them. 
 #   V1.4  17.08.05 Creates an index of tools used, with a clickable link to avoid scrolling down. Also formats the input details and index within boxes to maintain consistency. Input and index Code is split into subroutines.
+#   V1.5  30.01.06 Prints proper output even when actual per-sequence prediction is zero(previously it printed "server not responding").
 #*************************************************************************
 use CGI ':standard';
 use GD::Graph::lines;
@@ -610,7 +611,7 @@ sub HandlePerSeq
 
         my $valuecheck = 0;
     	my $valuetag = $perseq->getElementsByTagName("value-perseq")->item(0);
-        if($valuetag) # ACRM 15.06.05
+	if($valuetag) # ACRM 15.06.05
         {
             my $valuehl = $valuetag->getAttribute('highlight');
             push @valuehglt, $valuehl;
@@ -618,7 +619,8 @@ sub HandlePerSeq
             {
                 my $content = $val->getNodeValue;
                 $content =~ s/^\s+//g;
-                if($content)
+                #Bug fixed: when actual content is zero
+                if(($content)||($content eq '0')) 
                 {
                     push @value, $content;
                     $valuecheck++;

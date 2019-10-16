@@ -413,8 +413,8 @@ Usage:
 ./mix.pl [-f] [-d=file] [server:param=value[,param=value...]...] file.faa
        The normal mode of operation. Optionally allows you to override
        any defaults on the command line and reads a FASTA file generating
-       an XML output file. Defaults may be read read from a file specified
-       with the -d option of from ~/.apatrc. For any servers mix knows about, 
+       an XML output file. Defaults may be read from a file specified
+       with the -d option or from ~/.apatrc. For any servers mix knows about, 
        it checks that the options and values are valid. The -f flag overrides 
        this check. If values contain spaces, each server: section must be 
        contained in inverted commas.
