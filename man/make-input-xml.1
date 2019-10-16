@@ -1,0 +1,44 @@
+.TH MAKE-INPUT-XML l "13 April 2005" "Rev. 1.00"
+.SH NAME
+\fBmake-input-xml\fP \- create APAT XML input file from a FASTA sequence
+.SH SYNTAX
+.B make-input-xml.pl
+.RI [[ -plant ] 
+.RI file.faa
+.RI email
+.RI out.xml]
+.SH DESCRIPTION
+The
+.I make-input-xml
+program takes a protein sequence file in FASTA format and converts it
+to an APAT input XML file which must also be specified on the command
+line. An EMail address must also be given (some servers require this
+information).
+.LP
+APAT is a system for combining annotations/predictions from a number
+of servers either local or across the web.
+.SH PARAMETERS
+If run with no parameters, you will be prompted for file names
+.TP 15
+.I file.faa
+FASTA file containing a protein sequence
+.TP 15
+.I email
+Your EMail address. Required by some servers. May also be used for
+servers that return results by EMail
+.TP 15
+.I out.xml
+XML file in APAT input XML format
+.SH OPTIONS
+The only option is 
+.TP 15
+.BI \-plant
+Flags the sequence as coming from a plant - required by some of the
+servers.
+.SH BUGS
+None known
+.SH SEE ALSO
+apat(1), mas-mas.pl(1), master.pl(1), display.pl(1)
+.SH AUTHOR
+S.V.V. Deevi, The University of Reading
+

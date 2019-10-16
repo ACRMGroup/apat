@@ -1,0 +1,48 @@
+.TH MAS-MAS l "13 April 2005" "Rev. 1.00"
+.SH NAME
+\fBmas-mas\fP \- run the APAT master and display programs on a set of
+input XML files
+.SH SYNTAX
+.B mas-mas.pl
+.RI input-directory
+.RI output-directory
+.SH DESCRIPTION
+The
+.I mas-mas
+program takes a directory containing APAT XML input files and processes 
+each of them using the APAT 
+.I master
+program placing the output in the specified output directory.
+.LP
+Each input XML file will have a corresponding output XML and HTML
+file. So, if the input file is
+.I foo.xml
+there will be output files
+.I foo-out.xml
+and
+.I foo-out.html
+Any image files will be given unique names.
+.LP
+The APAT master program combines annotations/predictions from a number
+of servers either local or across the web.
+.SH PARAMETERS
+.TP 6
+.I input-directory
+This is the name of the directory containing the APAT XML input files
+created using
+.I make-input-xml.pl
+If this directory does not exist the program will exit with an error
+.TP 6
+.I output-directory
+This is the name of the directory in which the output XML files will
+be placed. These will also be processed using the 
+.I display.pl
+program to convert them to HTML
+
+.SH BUGS
+None known
+.SH SEE ALSO
+apat(1), make-input-xml.pl(1), master.pl(1), display.pl(1)
+.SH AUTHOR
+S.V.V. Deevi, The University of Reading
+

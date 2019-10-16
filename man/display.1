@@ -1,0 +1,61 @@
+.TH DISPLAY l "13 April 2005" "Rev. 1.00"
+.SH NAME
+\fBdisplay\fP \- convert the APAT XML output (APATML) and format as
+HTML together with images for display
+.SH SYNTAX
+.B display.pl
+.I [-web | -outdir=directory]
+.RI apat.xml
+.SH DESCRIPTION
+The
+.I display
+program takes an APATML (APAT XML) output file generated using the
+.I masper.pl
+program and displays the data as and HTML page together with images.
+.LP
+HTML output is to standard output. 
+.LP
+The default behaviour is to create any image files (which will be
+given unique names) to the current directory. This can be changed with
+the 
+.I \-web
+and
+.I \-outdir
+options.
+.LP
+The APAT master program combines annotations/predictions from a number
+of servers either local or across the web.
+.SH PARAMETERS
+.TP 6
+.I apat.xml
+An XML file using the APATML markup language to describe annotations
+and predictions of a protein sequence.
+
+.SH OPTIONS
+.TP 6
+.I \-outdir
+Allows an alternative directory to be specified for the output image
+files. Note that the HTML will not reflect this and will assume that
+images are in the current directory. Thus this option is used when the
+HTML output is redirected to a file in a directory other than the
+current directory. For example:
+.LP
+display.pl -outdir=foo bar.xml >foo/bar.html
+.TP 6
+.I \-web
+This option causes image files to be placed in a 
+.B tmp 
+directory on your web server (the exact location is specified during
+installation). The HTML will then reflect this location of the image
+files. This is used when running the 
+.I display.pl
+program from a CGI script with the output being sent direct to the
+web server. 
+
+.SH BUGS
+None known
+.SH SEE ALSO
+apat(1), make-input-xml.pl(1), master.pl(1), mas-mas.pl(1)
+.SH AUTHOR
+S.V.V. Deevi, The University of Reading
+

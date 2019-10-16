@@ -1,0 +1,156 @@
+Installation of APAT is very straightforward, though you need
+a number of other packages installed first which may not be
+quite so simple! 
+
+
+Installing GD
+-------------
+Download the following from http://www.boutell.com/gd/ (or more recent
+versions): 
+        gd-2.0.28.tar.gz
+
+
+Unpack and install gd-2.0.28.tar.gz
+       cd /tmp
+       tar -zxvf gd-2.0.28.tar.gz
+       cd gd-2.0.28
+       ./configure --prefix=/usr/local/apps/gd
+       make
+       make check
+       su
+       make install
+       cd /usr/local/lib; ln -s ../apps/gd/lib/* .
+       cd /usr/local/bin; ln -s ../apps/gd/bin/* .
+       cd /usr/local/include; ln -s ../apps/gd/include/* .
+
+(Note that I like to install packages under /usr/local/apps and then
+provide links in /usr/local/bin, etc. You might want to skip this and
+install directly in /usr/local/bin. In this case don't specify
+--prefix and skip the last three lines where the links are created.) 
+
+Installing Perl packages
+------------------------
+The following packages (and any dependent packages they need)
+are required:
+
+CGI.pm (should be installed on most systems already)
+GD::Graph
+XML::DOM
+LWP
+
+The following commands should do the trick:
+
+perl -MCPAN -e shell
+   install LWP
+   install GD
+   install GD::Graph
+   install XML::DOM
+
+Note that you should make sure you are running the version of Perl
+which you want to use for APAT. (Some systems may have multiple
+versions of Perl installed - make sure you use the full path to the
+one you want).
+
+Note that depending on the complexity of your local system
+installation (e.g. multiple versions of libraries, Perl, etc) you may
+have problems installing GD Perl support this way. If so, see the
+notes below for some help.
+
+Installing APAT
+---------------
+Simply run the install script in this directory (you may need to
+change the first line if you do not have Perl in /usr/bin/perl). You
+will be prompted for what you wish to install and which directories
+you wish to install files in. You have complete control over where the
+files are placed. 
+
+
+======================================================================
+Installing GD Perl support
+==========================
+
+If you have problems installing the Perl GD support using the
+automated install with 'perl -MCPAN -e shell', you may have to do
+it manually. Here are some notes from my own installation which
+may help you.
+
+Ensure that gdlib-config from what you have just installed comes up
+first in your path - i.e. make sure /usr/local/bin is in the
+path before anything else! Alternatively, hack Makefile.PL to make
+sure it is running the right one.
+
+Download the following from CPAN (or later versions)
+--------------------------------
+        GD-2.16.tar.gz
+        GDGraph-1.43.tar.gz
+        GDTextUtil-0.86.tar.gz
+ 
+
+Unpack and install GD
+---------------------
+       cd /tmp
+       tar -zxvf GD-2.16.tar.gz
+       cd GD-2.16
+
+       perl Makefile.PL INSTALLDIRS=site \
+            INSTALLSITELIB=/usr/local/apps/perl5.8.3/lib/site_perl/5.8.3/ \
+            INSTALLSITEARCH=/usr/local/apps/perl5.8.3/lib/site_perl/5.8.3/i686-linux/
+
+(Note that you should make sure you are running the version of Perl
+which you want to use for APAT. (Some systems may have multiple
+versions of Perl installed - make sure you use the full path to the
+one you want).
+(This should report the correct GD library being used - if not, make
+ sure the right gdlib-config is being used - see above).
+(Make sure you specify the right directory for installing the modules
+- depends on where your version of Perl lives)
+
+       make
+       make test
+       make install
+
+
+Unpack and install GD::Text
+---------------------------
+       cd /tmp
+       tar -zxvf GDTextUtil-0.86.tar.gz
+       cd GDTextUtil-0.86
+
+       perl Makefile.PL INSTALLDIRS=site \
+            INSTALLSITELIB=/usr/local/apps/perl5.8.3/lib/site_perl/5.8.3/ \
+            INSTALLSITEARCH=/usr/local/apps/perl5.8.3/lib/site_perl/5.8.3/i686-linux/
+
+(Note that you should make sure you are running the version of Perl
+which you want to use for APAT. (Some systems may have multiple
+versions of Perl installed - make sure you use the full path to the
+one you want).
+(Make sure you specify the right directory for installing the modules
+- depends on where your version of Perl lives)
+
+       make
+       make test
+       make install
+
+
+
+Unpack and install GD::Graph
+----------------------------
+       cd /tmp
+       tar -zxvf GDGraph-1.43.tar.gz
+       cd GDGraph-1.43
+
+       perl Makefile.PL INSTALLDIRS=site \
+            INSTALLSITELIB=/usr/local/apps/perl5.8.3/lib/site_perl/5.8.3/ \
+            INSTALLSITEARCH=/usr/local/apps/perl5.8.3/lib/site_perl/5.8.3/i686-linux/
+(Note that you should make sure you are running the version of Perl
+which you want to use for APAT. (Some systems may have multiple
+versions of Perl installed - make sure you use the full path to the
+one you want).
+(make sure you specify the right directory for installing the modules
+- depends on where your version of Perl lives)
+
+       make
+       make test
+       make samples
+       xv samples/*.gif
+       make install

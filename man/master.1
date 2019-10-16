@@ -1,0 +1,56 @@
+.TH MASTER l "13 April 2005" "Rev. 1.00"
+.SH NAME
+\fBmaster\fP \- run annotation/prediction servers on an APAT XML input
+file to create the APAT XML output (APATML) file
+.SH SYNTAX
+.B master.pl
+.I [-plugdir=directory]
+.RI in.xml
+.SH DESCRIPTION
+The
+.I master
+program takes an APAT XML input file generated using the
+.I make-input-xml.pl
+program and runs the annotation/prediction servers to create an output
+file in the APATML XML format.
+.LP
+APATML output is to standard output. 
+.LP
+The actual annotation/prediction servers are accessed via 'plug-ins'
+stored in the 
+.I plug
+sub-directory of the code installation
+directory. Alternative plug-in directories may be specified using the
+command line 
+.I -plugdir
+option or with the 
+.I PLUGINS
+environment variable. The command line option takes priority followed
+by the environment variable followed by the installation directory
+default. 
+.SH PARAMETERS
+.TP 6
+.I in.xml
+An XML file using the APAT input format to describe the sequence and
+related information required by the annotation servers.
+
+.SH OPTIONS
+.TP 6
+.I \-plugdir
+Allows an alternative directory to be specified for the plug-ins that
+access the servers. Takes priority over all other directories.
+
+.SH ENVIRONMENT VARIABLES
+.TP 6
+.I PLUGINS
+Allows an alternative directory to be specified for the plug-ins that
+access the servers. Takes priority over the default, but overridden by 
+.I -plugdir
+
+.SH BUGS
+None known
+.SH SEE ALSO
+apat(1), make-input-xml.pl(1), display.pl(1), mas-mas.pl(1)
+.SH AUTHOR
+S.V.V. Deevi, The University of Reading
+

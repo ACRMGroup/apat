@@ -1,0 +1,44 @@
+.TH APAT l "13 April 2005" "Rev. 1.00"
+.SH NAME
+\fBapat\fP \- a system for performing multiple annotations/predictions
+on one or more protein sequences.
+.SH DESCRIPTION
+The
+.I APAT
+system is a suite of programs and an XML format specification for 
+performing multiple annotations/predictions on protein sequences.
+.LP
+To use
+.I APAT
+you first convert a FASTA sequence file into the APAT input XML format
+using 
+.I make-input-xml.pl
+.LP
+The APAT
+.I master.pl
+program is then used to run a set of annotation/prediction server
+plug-ins to generate an output XML file in the 
+.I APATML 
+format.
+.LP
+The APATML XML file is then converted to HTML for display using
+.I display.pl
+Alternatively, the APATML file may be processed by further analysis
+software (not supplied with APAT).
+.LP
+APAT also supplies a 'master master' program
+.I mas-mas.pl
+which takes a set of APAT input XML files and processes each of them
+with the
+.I master.pl
+and
+.I display.pl
+programs allowing a whole set of annotations/predictions to be applied
+to a large set of protein sequences.
+.SH BUGS
+None known
+.SH SEE ALSO
+display(1), make-input-xml.pl(1), master.pl(1), mas-mas.pl(1)
+.SH AUTHOR
+S.V.V. Deevi, The University of Reading
+

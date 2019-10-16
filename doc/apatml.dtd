@@ -1,0 +1,68 @@
+<!ELEMENT date ( #PCDATA ) >
+
+<!ELEMENT description ( #PCDATA ) >
+
+<!ELEMENT function ( #PCDATA ) >
+
+<!ELEMENT input ( seqid, seq+ ) >
+
+<!ELEMENT param EMPTY >
+<!ATTLIST param name CDATA #REQUIRED >
+<!ATTLIST param value CDATA #REQUIRED >
+
+<!ELEMENT params ( param+ ) >
+
+<!ELEMENT perdom ( value-perdom+ ) >
+<!ATTLIST perdom class CDATA #IMPLIED >
+<!ATTLIST perdom highlight CDATA #IMPLIED >
+<!ATTLIST perdom name CDATA #IMPLIED >
+<!ATTLIST perdom rangemax CDATA #REQUIRED >
+<!ATTLIST perdom rangemin CDATA #REQUIRED >
+
+<!ELEMENT perdom-description ( #PCDATA ) >
+<!ATTLIST perdom-description class CDATA #IMPLIED >
+<!ATTLIST perdom-description name CDATA #REQUIRED >
+
+<!ELEMENT perres-character ( value-perres+ ) >
+<!ATTLIST perres-character name CDATA #REQUIRED >
+
+<!ELEMENT perres-number ( value-perres+ ) >
+<!ATTLIST perres-number clrmax CDATA #REQUIRED >
+<!ATTLIST perres-number clrmin CDATA #REQUIRED >
+<!ATTLIST perres-number graph CDATA #IMPLIED >
+<!ATTLIST perres-number graphtype CDATA #IMPLIED >
+<!ATTLIST perres-number name CDATA #REQUIRED >
+
+<!ELEMENT perseq ( description, value-perseq ) >
+<!ATTLIST perseq name CDATA #REQUIRED >
+
+<!ELEMENT predictions ( perdom | perdom-description | perres-character | perres-number | perseq | threshold | value-perseq )* >
+
+<!ELEMENT result ( function, run, predictions ) >
+<!ATTLIST result program CDATA #REQUIRED >
+<!ATTLIST result version CDATA #IMPLIED >
+
+<!ELEMENT results ( input, result+ ) >
+
+<!ELEMENT run ( params, date ) >
+
+<!ELEMENT seq ( #PCDATA ) >
+
+<!ELEMENT seqid ( #PCDATA ) >
+
+<!ELEMENT thr-res ( #PCDATA ) >
+
+<!ELEMENT threshold ( description, thr-res* ) >
+
+
+<!ELEMENT value-perdom ( #PCDATA ) >
+<!ATTLIST value-perdom label CDATA #REQUIRED >
+
+<!ELEMENT value-perres ( #PCDATA ) >
+<!ATTLIST value-perres residue CDATA #REQUIRED >
+
+<!ELEMENT value-perseq ( #PCDATA) >
+<!ATTLIST value-perseq highlight CDATA #REQUIRED >
+
+
+
