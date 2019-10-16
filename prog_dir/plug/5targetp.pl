@@ -4,8 +4,8 @@
 #   Program:    APAT: TargetP
 #   File:       5targetp.pl
 #   
-#   Version:    V1.0
-#   Date:       14.03.05
+#   Version:    V1.1
+#   Date:       17.06.05
 #   Function:   APAT plug-in wrapper for TargetP
 #   
 #   Copyright:  (c) University of Reading / S.V.V. Deevi 2005
@@ -47,6 +47,7 @@
 #   Revision History:
 #   =================
 #   V1.0  14.03.05 Original
+#   V1.1  17.06.05 Fixed to handle change in TargetP output format
 #
 #*************************************************************************
 use strict;
@@ -328,12 +329,12 @@ sub parse
     for($i=0; $i<@data; $i++)
     {
 	$_ = $data[$i];
-	if(/^\#\s+Name/)
+	if(/^Name/)             # SVVD 16.06.05. No longer has leading #
 	{
 	    $i++;
 	    $in=1;
 	}
-	elsif(/^\#------/)
+	elsif(/^------/)        # SVVD 16.06.05. No longer has leading #
 	{
 	    $in=0;  
 	}

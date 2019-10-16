@@ -368,10 +368,17 @@ sub HandlePerSeq
         
         $doPrintValues = 1;
         
+        # SVVD 16.06.05
+        # ACRM Corrected syntax 17.06.05
     	my $descriptiontag = $perseq->getElementsByTagName("description")->item(0);
-    	$desc = $descriptiontag->getFirstChild->getNodeValue;
-        push @description, $desc;
-        
+        if($descriptiontag)
+        {
+            $desc = $descriptiontag->getFirstChild->getNodeValue;
+            push @description, $desc;
+        }     
+
+        # SVVD 16.06.05
+        # ACRM 17.06.05 - went back to old style for clarity
     	my $valuetag = $perseq->getElementsByTagName("value-perseq")->item(0);
         if($valuetag) # ACRM 15.06.05
         {
